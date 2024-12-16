@@ -13,18 +13,16 @@ function fileToGenerativePart(path, mimeType) {
     };
   }
 
-const filePart1 = fileToGenerativePart("cat.jpeg", "image/jpeg");
-const filePart2 = fileToGenerativePart("dog.jpeg", "image/jpeg");
+const filePart1 = fileToGenerativePart("prompt_audio.mp3", "audio/mp3");
 
 async function run () {
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = "tell me about these two images.";
-    const imageParts = [
+    const prompt = "";
+    const audioParts = [
         filePart1,
-        filePart2,
     ]
-    const result = await model.generateContent([prompt, ...imageParts]);
+    const result = await model.generateContent([prompt, ...audioParts]);
     console.log(result.response.text());
 }
 run();  

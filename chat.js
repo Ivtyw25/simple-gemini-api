@@ -13,12 +13,9 @@ const rl = readline.createInterface({
 let isAwaitingResponse = false;
 
 async function run() { 
-    const history = [];
-    const chat = model.startChat({
+    const history = []; // start from an empty history
+    const chat = model.startChat({ 
         history,
-        generationConfig: {
-            maxOutputTokens: 500,
-        },
     });
 
     //function to get user input and send it to the model using streaming
@@ -28,29 +25,24 @@ async function run() {
                 if (msg.toLowerCase() == "exit") {
                     rl.close();
                 } else {
-                    try {
-                        history.push({
-                            role: "user",
-                            parts:[{text: msg}],
-                        });
-                        isAwaitingResponse = true;
-                        const result = await chat.sendMessageStream(msg, history);
-                        let text = ""
-                        for await (const chunk of result.stream) {
-                            const chunkText = await chunk.text();
-                            console.log(chunkText);
-                            text += chunkText;
-                        }
-                        history.push({
-                            role: "model",
-                            parts: [{text: text}],
-                        });
-                        isAwaitingResponse = false;
-                        inputAndResponse();
-                    } catch (error) {
-                        console.log("Error: ", error);
-                        isAwaitingResponse = false;
+                    history.push({
+                        role: "user",
+                        parts:[{text: msg}],
+                    });
+                    isAwaitingResponse = true;
+                    const result = await chat.sendMessageStream(msg, history);
+                    let text = ""
+                    for await (const chunk of result.stream) {
+                        const chunkText = chunk.text();
+                        console.log(chunkText);
+                        text += chunkText;
                     }
+                    history.push({
+                        role: "model",
+                        parts: [{text: text}],
+                     });
+                    isAwaitingResponse = false;
+                    inputAndResponse();
                 }
             })
         } else {
