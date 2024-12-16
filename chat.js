@@ -13,8 +13,9 @@ const rl = readline.createInterface({
 let isAwaitingResponse = false;
 
 async function run() { 
+    const history = [];
     const chat = model.startChat({
-        history: [], //start with an empty history
+        history,
         generationConfig: {
             maxOutputTokens: 500,
         },
@@ -28,14 +29,22 @@ async function run() {
                     rl.close();
                 } else {
                     try {
+                        history.push({
+                            role: "user",
+                            parts:[{text: msg}],
+                        });
                         isAwaitingResponse = true;
-                        const result = await chat.sendMessageStream(msg);
+                        const result = await chat.sendMessageStream(msg, history);
                         let text = ""
                         for await (const chunk of result.stream) {
                             const chunkText = await chunk.text();
                             console.log(chunkText);
                             text += chunkText;
                         }
+                        history.push({
+                            role: "model",
+                            parts: [{text: text}],
+                        });
                         isAwaitingResponse = false;
                         inputAndResponse();
                     } catch (error) {
